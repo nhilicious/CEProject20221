@@ -91,15 +91,14 @@ title('FSK Modulated Signal');
 %********************* Transmitted signal x ******************************
 x = mod;
 %********************* Channel model h and w *****************************
-% h = 1;   % Signal fading 
-% N0 = sqrt(10);
-% w = sqrt(N0/2) * rand(1, N*nb);   % Noise
+h = 1;   % Signal fading 
+N0 = 0.3; % (W/Hz)
+mean = 0;
+sigma = sqrt(N0/2);
+w = randn(size(x)); % Generate random numbers from a standard normal distribution
+w = mean + sigma*w; % Scale the random numbers to obtain Gaussian distribution with mean and sigma
 %********************* Received signal y *********************************
-%y = h.*x + w;   % Convolution
-% y1 = h.*x;
-% %SNR = 1;  % Signal-to-noise ratio
-% SNR = sqrt(1);
-% y = awgn(y1, SNR, 'measured');
+y = h.*x + w;
 
 h = 1;   % Signal fading 
 N0 = 0.3; % (W/Hz)
