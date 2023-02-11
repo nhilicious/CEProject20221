@@ -4,7 +4,7 @@ clc, clear all, close all;
 % ******************* Digital/Binary input information ********************
   
 % Binary information as stream of bits (binary signal 0 or 1)
-x = randi(2, [1,30], 'int32') - 1; % auto generate the binary sequence
+x = randi(2, [1,1000], 'int32') - 1; % auto generate the binary sequence
 x1 = x;
 N = length(x);
 Tb = 0.0001;   %Data rate = 1MHz i.e., bit period (second)
@@ -40,10 +40,10 @@ ylabel('Amplitude(Volts)');
 title('Digital Input Signal');
 
 % *************************** FSK Modulation *****************************
-Ac = 10;      % Carrier amplitude for binary input
+Ac = 1;      % Carrier amplitude for binary input
 br = 1/Tb;    % Bit rate
 Fc1 = br*4;      % Carrier phase for binary input '1'
-Fc2 = br*4.3;     % Carrier phase for binary input '0' 
+Fc2 = br*4.35;     % Carrier phase for binary input '0' 
 
 t2 = Tb/nb:Tb/nb:Tb;   % Signal time
 mod = [];
@@ -91,15 +91,25 @@ title('FSK Modulated Signal');
 %********************* Transmitted signal x ******************************
 x = mod;
 %********************* Channel model h and w *****************************
-h = 1;   % Signal fading 
-N0 = sqrt(10);
-w = sqrt(N0/2) * rand(1, N*nb);   % Noise
+% h = 1;   % Signal fading 
+% N0 = sqrt(10);
+% w = sqrt(N0/2) * rand(1, N*nb);   % Noise
 %********************* Received signal y *********************************
 %y = h.*x + w;   % Convolution
-y1 = h.*x;
-%SNR = 1;  % Signal-to-noise ratio
-SNR = sqrt(1);
-y = awgn(y1, SNR, 'measured');
+% y1 = h.*x;
+% %SNR = 1;  % Signal-to-noise ratio
+% SNR = sqrt(1);
+% y = awgn(y1, SNR, 'measured');
+
+h = 1;   % Signal fading 
+N0 = 0.3; % (W/Hz)
+% N0 = 50;
+mean = 0;
+sigma = sqrt(N0/2);
+w = randn(size(x)); % Generate random numbers from a standard normal distribution
+w = mean + sigma*w; % Scale the random numbers to obtain Gaussian distribution with mean and sigma
+y = h.*x + w;
+
 
 subplot(6,1,5);
 plot(t3,y);
@@ -124,11 +134,11 @@ for n = s:s:length(y);
   z2 = trapz(t5,mc2);         % Intregation 
   rz1 = round(2*z1/Tb);
   rz2 = round(2*z2/Tb);
-  if(rz1 > Ac/2);              % Logical condition 
-    a = 1;
-  else(rz2 > Ac/2);
-    a = 0;
-  end
+   if(rz1 > rz2);              % Logical condition 
+     a = 1;
+   else(rz2 >= rz1);
+     a = 0;
+   end
   demod = [demod a];
 end
 disp('Demodulated Binary Information at Receiver: ');
