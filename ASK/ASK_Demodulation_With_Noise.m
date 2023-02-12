@@ -1,7 +1,6 @@
 % <<<<<<<<<<<<<<<<<<<< ASK Modulation and Demodulation >>>>>>>>>>>>>>>>>>>>
 
 clc, clear all, close all;
-
 % ******************* Digital/Binary input information ********************
 num_bit = 1000;
 x = randi(2, [1,num_bit], 'int32') - 1; % Randomly generate a Binary information as stream of bits (binary signal 0 or 1)
@@ -9,7 +8,8 @@ x1 = x; % x1 stores the input binary signal
 N = length(x); % length of the binary information
 Tb = 0.001;   % one bit lasts in Tb second or bit rate = 1/Tb
 Rb = 1/Tb; % Rb = bit rate 
-
+% disp('Binary Input Information at Transmitter: ');
+% disp(x);
 
 % ************* Represent input information as digital signal *************
 
@@ -31,7 +31,8 @@ end
 % plot the input binary information
 t1 = Tb/nb : Tb/nb : nb*N*(Tb/nb);   % time axis
 figure('Name','2-ASK Modulation and Demodulation With Noise','NumberTitle','off');
-subplot(7,1,1);
+subplot(6,1,1);
+axis tight;
 plot(t1,digit,'LineWidth',2.5);
 grid on;
 axis([0 Tb*N -0.5 1.5]);
@@ -40,16 +41,17 @@ ylabel('Amplitude(Volts)');
 title('Digital Input Signal');
 
 % *************************** ASK Modulation *****************************
-Eb = 15; % energy per bit (V^2)
+dB = 4;
+Eb = 5; % energy per bit (V^2)
 
 % 100% depth BASK unipolar modulation
-Ac1 = 2*sqrt(Eb/Tb);     % Carrier amplitude for binary input '1'
-Ac2 = 0;      % Carrier amplitude for binary input '0'
+% Ac1 = 2*sqrt(Eb/Tb);     % Carrier amplitude for binary input '1'
+% Ac2 = 0;      % Carrier amplitude for binary input '0'
 
 % 50% depth BASK 
-% A = 4* sqrt(Eb/ (5*Tb));
-% Ac1 = A;    % Carrier amplitude for binary input '1'
-% Ac2 = A/2;      % Carrier amplitude for binary input '0'
+A = 4* sqrt(Eb/ (5*Tb));
+Ac1 = A;    % Carrier amplitude for binary input '1'
+Ac2 = A/2;      % Carrier amplitude for binary input '0'
 
 Fc = Rb*10;   % Carrier frequency
 mod = [];
@@ -58,14 +60,16 @@ y1 = Ac1*cos(2*pi*Fc*t1); % carrier function 1
 y2 = Ac2*cos(2*pi*Fc*t1); % carrier function 2
 
 % plot carrier 1
-subplot(7,1,2);
+axis tight;
+subplot(6,1,2);
 plot(t1,y1);
 xlabel('Time(Sec)');
 ylabel('Amplitude(Volts)');
 title('2-ASK Carrier 1');
 
 % plot carrier 2
-subplot(7,1,3);
+axis tight;
+subplot(6,1,3);
 plot(t1,y2);
 ylim([-20,20]);
 xlabel('Time(Sec)');
@@ -83,7 +87,8 @@ for (i = 1:1:N)
 end
 
 % plot modulated signal
-subplot(7,1,4);
+axis tight;
+subplot(6,1,4);
 plot(t1,mod);
 grid on;
 ylim([-20,20]);
@@ -99,8 +104,21 @@ x = mod;
 
 % ********************* Received signal y *********************************
 
+% Received signal without noise
+y = x;
+
+% plot Received signal without noise
+% axis tight;
+% subplot(6,1,5);
+% plot(t1,y);
+% grid on;
+% xlabel('Time(Sec)');
+% ylabel('Amplitude(Volts)');
+% title('2-ASK Received Signal Without Noise');
+
+% -------------------------------------------------------------------------
 % Received signal with white noise
-N0 = 1; % (W/Hz)
+N0 = Eb/(10.^(dB/10));
 mean = 0;
 sigma = sqrt(N0/2);
 noise = randn(size(x)); % Generate random numbers from a standard normal distribution
@@ -109,12 +127,15 @@ noise = mean + sigma*noise; % Scale the random numbers to obtain Gaussian distri
 y = x + noise;   % add noise
 
 % plot Received signal with white noise
-subplot(7,1,6);
+axis tight;
+subplot(6,1,5);
 plot(t1,y);
 grid on;
 xlabel('Time(Sec)');
 ylabel('Amplitude(Volts)');
 title('2-ASK Received Signal With White Noise');
+% axis tight;
+
 % *************************** ASK Demodulation ****************************
 s = length(t2);
 demod = [];
@@ -152,7 +173,8 @@ end
 
 t5 = Tb/nb:Tb/nb:nb*length(demod)*(Tb/nb);   % Time period
 
-subplot(7,1,7)
+subplot(6,1,6)
+axis tight;
 plot(t5,digit,'LineWidth',2.5);grid on;
 axis([0 Tb*length(demod) -0.5 1.5]);
 grid on;
@@ -170,7 +192,8 @@ fprintf('BER = %.4f \n', sum(num)/num_bit);
 fprintf('\n*** BER Theory ***\n')
 fprintf('Eb/N0 = %f\n',Eb/N0);
 fprintf('10*lg(Eb/N0) = %f\n',10*log10(Eb/N0));
-fprintf('BASK 50%% -->\t P(e) = %f\n', 0.5 * erfc(sqrt(Eb/(4*N0)))); % for BASK - 50
-fprintf('BASK 100%% -->\t P(e) = %f\n', 0.5 * erfc(sqrt(Eb/(2*N0)))); % for BASK - 100
+fprintf('P(e) = %f', 0.5 * erfc(sqrt(Eb/(4*N0))));
 
 % ************************** End of the program ***************************
+
+
